@@ -1,3 +1,4 @@
+options(shiny.maxRequestSize=30*1024^2)
 library(shinyWidgets)
 library(openxlsx)
 library(memisc)
@@ -3011,8 +3012,8 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
   
   
   
-  #session$onSessionEnded(function() {
-  #  stopApp()
-  #})
+  session$onSessionEnded(function() {
+    stopApp()
+  })
   
 })
