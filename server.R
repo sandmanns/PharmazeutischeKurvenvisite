@@ -506,23 +506,37 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
     shinyjs::enable("do_inMED")
     
    # shinyFiles::shinyDirChoose(input=input,session = session,id = 'export_dir',roots=c(home="~"))
-    shinyFiles::shinyDirChoose(input=input,session = session,id = 'export_dir',roots=c(home="C:/"))
+    shinyFiles::shinyDirChoose(input=input,session = session,id = 'export_dir',roots=getVolumes()())
     output$exportUI1<-renderUI({shinyDirButton('export_dir',title = "Export-Ordner",
                                                label = "Durchsuchen")})
     observe(
       if(!is.null(input$export_dir)){
-        if(paste(unlist(input$export_dir[[1]]),collapse="/")==0||paste(unlist(input$export_dir[[1]]),collapse="/")==1){
-          #output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
-          output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: C:/"))})
+        if(suppressWarnings(!is.na(as.numeric(paste(unlist(input$export_dir[[1]]),collapse="/"))))){
+          if(sum(getVolumes()()=="G:/")>0){
+            #output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
+            output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: G:/"))})
+            shinyjs::enable("do_out")
+          }else{
+            output$exportUI0<-renderUI({h5(paste0("Ordner für den Export noch nicht gewählt"))})
+            shinyjs::disable("do_out")
+          }
+
         }else{
          # output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ~",
         #                                        paste(unlist(input$export_dir[[1]]),collapse="/")))})
-          output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: C:/",
-                                                paste(unlist(input$export_dir[[1]]),collapse="/")))})
+          root1<-input$export_dir$root
+          root1<-strsplit(root1,"")
+          root1<-root1[[1]]
+          root1<-root1[(which(root1==":")-1):which(root1==":")]
+          root1<-paste(root1,collapse="")
+          output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ",
+                                                paste0(root1,paste(unlist(input$export_dir[[1]]),collapse="/"))))})
+          shinyjs::enable("do_out")
         }
       }else{
         #output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
-        output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: C:/"))})
+        output$exportUI0<-renderUI({h5(paste0("Ordner für den Export noch nicht gewählt "))})
+        shinyjs::disable("do_out")
       }      
     )
 
@@ -1063,12 +1077,22 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
       name_export<-paste0("Export Pharmazeutische Kurvenvisite ",start_anders_med,"-",ende_max_anders_med,".xlsx")
       #pfad<-paste0("C:",paste(unlist(input$export_dir[[1]]),collapse="/"))
       
-        if(paste(unlist(input$export_dir[[1]]),collapse="/")==0||paste(unlist(input$export_dir[[1]]),collapse="/")==1){
+      if(suppressWarnings(!is.na(as.numeric(paste(unlist(input$export_dir[[1]]),collapse="/"))))){
           #pfad<-"~"
-          pfad<-"C:/"
+          if(sum(getVolumes()()=="G:/")>0){
+            #output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
+            pfad<-"G:/"
+          }else{
+            pfad<-NULL
+          }
         }else{
           #pfad<-paste0("~",paste(unlist(input$export_dir[[1]]),collapse="/"))
-          pfad<-paste0("C:",paste(unlist(input$export_dir[[1]]),collapse="/"))
+          root1<-input$export_dir$root
+          root1<-strsplit(root1,"")
+          root1<-root1[[1]]
+          root1<-root1[(which(root1==":")-1):which(root1==":")]
+          root1<-paste(root1,collapse="")
+          pfad<-paste0(root1,paste(unlist(input$export_dir[[1]]),collapse="/"))
         }
       
       tt <- tryCatch(saveWorkbook(wb,file=paste0(pfad,"/",name_export),overwrite = T),
@@ -1079,7 +1103,7 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
         if(length(grep("Permission denied",tt$message))>0){
           shinyjs::html("text", paste0("<br><br>Zugriff verweitert.<br><br>
                                          Falls Sie die exportierte Datei aus einer vorherigen Analyse noch geöffnet haben: bitte schließen Sie diese oder ändern Sie den Dateinamen, damit ein Update exportiert werden kann. 
-                                         <br>Bitte stellen Sie weiterhin sicher, dass Sie für den ausgewählten Ordner Schreibrechte besitzen (für C:/ häufig nicht der Fall)."), add = TRUE)
+                                         <br>Bitte stellen Sie weiterhin sicher, dass Sie für den ausgewählten Ordner Schreibrechte besitzen (für ein gewähltes Laufwerk ohne Unterverzeichnis häufig nicht der Fall)."), add = TRUE)
         }else{
           shinyjs::html("text", paste0("<br><br>",tt$message), add = TRUE)
         }
@@ -1953,23 +1977,36 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
     observe({if((!is.null(input$do_inDAY)&&input$do_inDAY!=0)&&(!is.null(input$do_inMED)&&input$do_inMED!=0)){
       shinyjs::enable("do_out2")
       #shinyFiles::shinyDirChoose(input=input,session = session,id = 'export_dir2',roots=c(home="~"))
-      shinyFiles::shinyDirChoose(input=input,session = session,id = 'export_dir2',roots=c(home="C:/"))
+      shinyFiles::shinyDirChoose(input=input,session = session,id = 'export_dir2',roots=getVolumes()())
       output$exportUI1b<-renderUI({shinyDirButton('export_dir2',title = "Export-Ordner",
                                                   label = "Durchsuchen")})
       observe(
         if(!is.null(input$export_dir2)){
-          if(paste(unlist(input$export_dir2[[1]]),collapse="/")==0||paste(unlist(input$export_dir2[[1]]),collapse="/")==1){
-            #output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
-            output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: C:/"))})
+          if(suppressWarnings(!is.na(as.numeric(paste(unlist(input$export_dir2[[1]]),collapse="/"))))){
+            if(sum(getVolumes()()=="G:/")>0){
+              #output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
+              output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: G:/"))})
+              shinyjs::enable("do_out2")
+            }else{
+              output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export noch nicht gewählt"))})
+              shinyjs::disable("do_out2")
+            }
           }else{
             #output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: ~",
             #                                       paste(unlist(input$export_dir2[[1]]),collapse="/")))})
-            output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: C:/",
-                                                   paste(unlist(input$export_dir2[[1]]),collapse="/")))})
+            root1<-input$export_dir2$root
+            root1<-strsplit(root1,"")
+            root1<-root1[[1]]
+            root1<-root1[(which(root1==":")-1):which(root1==":")]
+            root1<-paste(root1,collapse="")
+            output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: ",
+                                                   paste0(root1,paste(unlist(input$export_dir2[[1]]),collapse="/"))))})
+            shinyjs::enable("do_out2")
           }
         }else{
           #output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
-          output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: C:/"))})
+          output$exportUI0b<-renderUI({h5(paste0("Ordner für den Export: "))})
+          shinyjs::disable("do_out2")
         }      
       )
       
@@ -2974,12 +3011,22 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
           
 
         #pfad<-paste0("~",paste(unlist(input$export_dir2[[1]]),collapse="/"))
-        if(paste(unlist(input$export_dir2[[1]]),collapse="/")==0||paste(unlist(input$export_dir2[[1]]),collapse="/")==1){
+        if(suppressWarnings(!is.na(as.numeric(paste(unlist(input$export_dir2[[1]]),collapse="/"))))){
           #pfad<-"~"
-          pfad<-"C:/"
+          if(sum(getVolumes()()=="G:/")>0){
+            #output$exportUI0<-renderUI({h5(paste0("Ordner für den Export: ~/"))})
+            pfad<-"G:/"
+          }else{
+            pfad<-NULL
+          }
         }else{
           #pfad<-paste0("~",paste(unlist(input$export_dir2[[1]]),collapse="/"))
-          pfad<-paste0("C:",paste(unlist(input$export_dir2[[1]]),collapse="/"))
+          root1<-input$export_dir2$root
+          root1<-strsplit(root1,"")
+          root1<-root1[[1]]
+          root1<-root1[(which(root1==":")-1):which(root1==":")]
+          root1<-paste(root1,collapse="")
+          pfad<-paste0(root1,paste(unlist(input$export_dir2[[1]]),collapse="/"))
         }
           #if(file.opened(paste0(pfad,"/",name_export))){
           #  shinyjs::html("text", paste0("<br><br>Datei ",paste0(pfad,"/",name_export)," ist noch geöffnet. Bitte schließen Sie zuerst die Datei.<br><br>"), add = TRUE)
@@ -2995,7 +3042,7 @@ Die Anwendung ist kein Medizinprodukt nach Medizinproduktegesetz oder EU-Medical
           if(length(grep("Permission denied",tt$message))>0){
             shinyjs::html("text", paste0("<br><br>Zugriff verweitert.<br><br>
                                          Falls Sie die exportierte Datei aus einer vorherigen Analyse noch geöffnet haben: bitte schließen Sie diese oder ändern Sie den Dateinamen, damit ein Update exportiert werden kann. 
-                                         <br>Bitte stellen Sie weiterhin sicher, dass Sie für den ausgewählten Ordner Schreibrechte besitzen (für C:/ häufig nicht der Fall)."), add = TRUE)
+                                         <br>Bitte stellen Sie weiterhin sicher, dass Sie für den ausgewählten Ordner Schreibrechte besitzen (für ein gewähltes Laufwerk ohne Unterordner häufig nicht der Fall)."), add = TRUE)
           }else{
             shinyjs::html("text", paste0("<br><br>",tt$message), add = TRUE)
           }
