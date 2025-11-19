@@ -48,7 +48,7 @@ shinyUI(fluidPage(
                          uiOutput("exportUI0"),
                          uiOutput("exportUI1"),
                          br(),
-                         actionButton('do_out',"Vollständigen Datensatz exportieren",class="btn-primary",disabled = T)
+                         downloadButton('do_out',"Vollständigen Datensatz exportieren",class="btn-primary",disabled = T)
  
                 ),
                 tabPanel("Patienten pro Tag",
@@ -101,7 +101,7 @@ shinyUI(fluidPage(
                          uiOutput("exportUI0b"),
                          uiOutput("exportUI1b"),
                          br(),
-                         actionButton('do_out2',"Datensatz + Analyse exportieren",class="btn-primary",disabled = T)
+                         downloadButton('do_out2',"Datensatz + Analyse exportieren",class="btn-primary",disabled = T)
                          ),
                 tabPanel("Info",
                          hr(),
